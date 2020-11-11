@@ -1,0 +1,28 @@
+{
+  "bgp": {
+    "peers": [
+      {
+        "address": "10.88.0.253",
+	"as": 65512
+      },
+      {
+        "address": "10.88.0.254",
+	"as": 65512
+      }
+    ],
+    "local": {
+      "routerID": "10.88.0.200",
+      "as": 65512,
+      "listenPort": -1
+    }
+  },
+  "service": {
+    "ip": "10.88.2.1",
+    "healthcheck": {
+      "httphealthcheck": {
+        "name": "matchbox",
+        "url": "http://localhost:80"
+      }
+    }
+  }
+}
