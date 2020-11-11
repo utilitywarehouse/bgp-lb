@@ -18,11 +18,9 @@
   },
   "service": {
     "ip": "10.88.2.1",
-    "healthcheck": {
-      "httphealthcheck": {
-        "name": "matchbox",
-        "url": "http://localhost:80"
-      }
-    }
+     "httphealthcheck": {
+       "name": "matchbox",
+       "url": "http://localhost:80"
+     }
   }
 }
