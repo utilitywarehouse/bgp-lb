@@ -59,6 +59,25 @@ func main() {
 	// TODO: Add a dummy interface for the service ip (?). Otherwise this
 	// needs to be set as a systemd service ExecStartPre.
 
+	// Ensure the dummy device exists
+	if err := ensureServiceDevice(config.Service.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot ensure service link device")
+	}
+	// Add the service ip after cleaning all pre-existing ipv4 addresses
+	if err := flushIPv4Addresses(config.Service.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error":  err,
+			"device": config.Service.Name,
+		}).Fatal("Failed to clean ipv4 addresses from device")
+	}
+	if err := addAddressToDevice(config.Service.IP, config.Service.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add address to service link device")
+	}
+
 	// Set up the healthcheck. TODO: Make an interface and allow different
 	// kinds of healthchecks
 	h := NewHttpCheck(
