@@ -31,14 +31,8 @@ func initLogger(logLevel string) {
 			"level": logLevel}).Fatal("Unsupported log level")
 	}
 }
-func main() {
-	flag.Parse()
-	initLogger(*flagLogLevel)
-	config, err := readConfig(*flagConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
 
+func bgpSetup(config *config) *BgpServer {
 	// Start bgp server
 	bgp, err := initBgpServer(
 		config.Bgp.Local.RouterId,
@@ -46,19 +40,39 @@ func main() {
 		config.Bgp.Local.ListenPort,
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot start bgp server")
 	}
+	// Add Peers
 	for _, peer := range config.Bgp.Peers {
 		if err := bgp.AddPeer(peer.Address, peer.AS); err != nil {
-			log.Fatal(err)
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Fatal("Cannot add bgpp peer")
 		}
 	}
+	return bgp
+}
 
-	// TODO: Set up ipvs service here(?). Otherwise this needs to be set as
-	// a systemd service ExecStartPre.
-	// TODO: Add a dummy interface for the service ip (?). Otherwise this
-	// needs to be set as a systemd service ExecStartPre.
-
+func netlinkSetup(config *config) {
+	// Ensure ipvs service and add the local router as destination
+	if err := cleanIPVSServices(config.Service.IP); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot clean existing ipvs services")
+	}
+	svc, err := addIPVSService(config.Service.IP, config.Service.Protocol, config.Service.ServicePort)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add ipvs service")
+	}
+	if err := addIPVSDestination(svc, config.Bgp.Local.RouterId, config.Service.TargetPort); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add ipvs service destination")
+	}
 	// Ensure the dummy device exists
 	if err := ensureServiceDevice(config.Service.Name); err != nil {
 		log.WithFields(log.Fields{
@@ -77,6 +91,20 @@ func main() {
 			"error": err,
 		}).Fatal("Cannot add address to service link device")
 	}
+}
+
+func main() {
+	flag.Parse()
+	initLogger(*flagLogLevel)
+	config, err := readConfig(*flagConfig)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Failed to read config file")
+	}
+
+	bgp := bgpSetup(config)
+	netlinkSetup(config)
 
 	// Set up the healthcheck. TODO: Make an interface and allow different
 	// kinds of healthchecks
@@ -86,6 +114,7 @@ func main() {
 		config.Service.HttpHealthCheck.Url,
 	)
 
+	// main loop
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
 		status := h.Check()
 		if status.err != "" {
