@@ -33,6 +33,7 @@ type localConfig struct {
 
 // serviceConfig contains the advertised service ip and the healthcheck
 type serviceConfig struct {
+	Name            string                `json:"name"`
 	IP              string                `json:"ip"`
 	HttpHealthCheck httpHealthCheckConfig `json:"httphealthcheck"`
 }

@@ -5,6 +5,7 @@ require (
 	github.com/osrg/gobgp v0.0.0-20201101142815-7ce0dddd4f49
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.2.2
+	github.com/vishvananda/netlink v0.0.0-20170802012344-a95659537721
 )
 
 module github.com/utilitywarehouse/bgp-lb

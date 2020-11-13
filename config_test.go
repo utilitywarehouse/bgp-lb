@@ -28,6 +28,7 @@ func TestConfigFmt(t *testing.T) {
     }
   },
   "service": {
+    "name": "matchbox",
     "ip": "10.88.2.1",
     "httphealthcheck": {
       "name": "matchbox",
@@ -51,6 +52,7 @@ func TestConfigFmt(t *testing.T) {
 	assert.Equal(t, "10.88.0.200", conf.Bgp.Local.RouterId)
 	assert.Equal(t, uint32(65512), conf.Bgp.Local.AS)
 	assert.Equal(t, int32(-1), conf.Bgp.Local.ListenPort)
+	assert.Equal(t, "matchbox", conf.Service.Name)
 	assert.Equal(t, "10.88.2.1", conf.Service.IP)
 	assert.Equal(t, "matchbox", conf.Service.HttpHealthCheck.Name)
 	assert.Equal(t, "http://localhost:80", conf.Service.HttpHealthCheck.Url)
