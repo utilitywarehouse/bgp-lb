@@ -79,6 +79,11 @@ func netlinkSetup(config *config) {
 			"error": err,
 		}).Fatal("Cannot ensure service link device")
 	}
+	if err := ensureDeviceUp(config.Service.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot bring link device up")
+	}
 	// Add the service ip after cleaning all pre-existing ipv4 addresses
 	if err := flushIPv4Addresses(config.Service.Name); err != nil {
 		log.WithFields(log.Fields{

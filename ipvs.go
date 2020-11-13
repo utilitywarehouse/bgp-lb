@@ -69,6 +69,7 @@ func toIPVSDestination(ip string, port uint16) *libipvs.Destination {
 	return &libipvs.Destination{
 		Address: net.ParseIP(ip),
 		Port:    port,
+		Weight:  1,
 	}
 }
 
