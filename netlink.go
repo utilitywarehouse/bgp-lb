@@ -26,17 +26,6 @@ func ensureServiceDevice(name string) error {
 	return nil
 }
 
-// ensureDeviceUp bring up a netlink device
-func ensureDeviceUp(name string) error {
-	h := netlink.Handle{}
-	defer h.Delete()
-	link, err := h.LinkByName(name)
-	if err != nil {
-		return err
-	}
-	return h.LinkSetUp(link)
-}
-
 // flushIPv4Addresses deletes all the ipv4 addresses from a device
 func flushIPv4Addresses(device string) error {
 	h := netlink.Handle{}
