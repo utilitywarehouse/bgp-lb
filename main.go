@@ -93,6 +93,10 @@ func netlinkSetup(config *config) {
 	}
 }
 
+func healthCheckSetup(config *config) Checker {
+	return NewHttpCheck(config.Service.HttpHealthCheck.Port)
+}
+
 func main() {
 	flag.Parse()
 	initLogger(*flagLogLevel)
@@ -105,27 +109,19 @@ func main() {
 
 	bgp := bgpSetup(config)
 	netlinkSetup(config)
+	h := healthCheckSetup(config)
 
-	// Set up the healthcheck. TODO: Make an interface and allow different
-	// kinds of healthchecks
-	h := NewHttpCheck(
-		config.Service.HttpHealthCheck.Name,
-		fmt.Sprintf("%s http server check", config.Service.HttpHealthCheck.Name),
-		config.Service.HttpHealthCheck.Url,
-	)
-
-	// main loop
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
-		status := h.Check()
-		if status.err != "" {
-			log.Warn(fmt.Sprintf("Healthcheck error: %s", status.err))
+		res := h.Check()
+		if res.err != "" {
+			log.Warn(fmt.Sprintf("Healthcheck error: %s", res.err))
 		}
-		if status.healthy && !advertised {
+		if res.healthy && !advertised {
 			ServiceOn(bgp, config)
 		}
-		if !status.healthy && advertised {
-			if status.output != "" {
-				log.Warn(fmt.Sprintf("Healthcheck failed: %s", status.output))
+		if !res.healthy && advertised {
+			if res.output != "" {
+				log.Warn(fmt.Sprintf("Healthcheck failed: %s", res.output))
 			}
 			ServiceOff(bgp, config)
 		}

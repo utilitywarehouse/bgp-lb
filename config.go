@@ -43,8 +43,7 @@ type serviceConfig struct {
 
 // httpHealthCheckConfig contains the name and the url for an http healthcheck
 type httpHealthCheckConfig struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
+	Port int `json:"port"`
 }
 
 func readConfig(path string) (*config, error) {

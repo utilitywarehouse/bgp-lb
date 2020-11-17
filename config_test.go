@@ -34,8 +34,7 @@ func TestConfigFmt(t *testing.T) {
     "targetLocalPort": 8080,
     "protocol": "tcp",
     "httphealthcheck": {
-      "name": "matchbox",
-      "url": "http://localhost:80"
+      "port": 8080
     }
 
   }
@@ -60,6 +59,5 @@ func TestConfigFmt(t *testing.T) {
 	assert.Equal(t, uint16(80), conf.Service.ServicePort)
 	assert.Equal(t, uint16(8080), conf.Service.TargetPort)
 	assert.Equal(t, "tcp", conf.Service.Protocol)
-	assert.Equal(t, "matchbox", conf.Service.HttpHealthCheck.Name)
-	assert.Equal(t, "http://localhost:80", conf.Service.HttpHealthCheck.Url)
+	assert.Equal(t, 8080, conf.Service.HttpHealthCheck.Port)
 }

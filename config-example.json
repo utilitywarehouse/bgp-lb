@@ -23,8 +23,7 @@
     "targetLocalPort": 8080,
     "protocol": "tcp",
     "httphealthcheck": {
-       "name": "matchbox",
-       "url": "http://localhost:80"
+       "port": 8080
     }
   }
 }

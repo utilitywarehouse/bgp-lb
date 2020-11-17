@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -8,41 +9,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Status struct {
-	name    string
-	desc    string
-	healthy bool
-	err     string
-	output  string
-}
-
 type HttpCheck struct {
-	name   string
-	desc   string
 	client *http.Client
-	url    string
+	port   int
 }
 
-type HttpCheckInterface interface {
-	Check() *Status
-}
-
-func NewHttpCheck(name, desc, url string) *HttpCheck {
-	return &HttpCheck{
-		name:   name,
-		desc:   desc,
+func NewHttpCheck(port int) HttpCheck {
+	return HttpCheck{
 		client: http.DefaultClient,
-		url:    url,
+		port:   port,
 	}
 }
 
-func (hc *HttpCheck) Check() *Status {
-	resp, err := hc.client.Get(hc.url)
+func (hc HttpCheck) Check() Result {
+	url := fmt.Sprintf("http://127.0.0.1:%d", hc.port)
+	resp, err := hc.client.Get(url)
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Warn("error while trying to query HTTP endpoint")
-		return &Status{
-			name:    hc.name,
-			desc:    hc.desc,
+		return Result{
 			healthy: false,
 			err:     err.Error(),
 			output:  "",
@@ -63,9 +47,7 @@ func (hc *HttpCheck) Check() *Status {
 		log.WithFields(log.Fields{"code": resp.StatusCode}).Warn("invalid response from endpoint")
 		healthy = false
 	}
-	return &Status{
-		name:    hc.name,
-		desc:    hc.desc,
+	return Result{
 		healthy: healthy,
 		err:     "",
 		output:  body,
