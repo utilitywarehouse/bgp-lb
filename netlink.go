@@ -4,6 +4,7 @@ import (
 	"net"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -62,4 +63,44 @@ func addAddressToDevice(ip, device string) error {
 			Mask: ipv4Mask,
 		},
 	})
+}
+
+// netlinkSetup applies the needed host network configuration based on the
+// service config
+func netlinkSetup(serviceConfig serviceConfig, localIP string) {
+	// Ensure ipvs service and add the local router as destination
+	if err := cleanIPVSServices(serviceConfig.IP); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot clean existing ipvs services")
+	}
+	svc, err := addIPVSService(serviceConfig.IP, serviceConfig.Protocol, serviceConfig.ServicePort)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add ipvs service")
+	}
+	if err := addIPVSDestination(svc, localIP, serviceConfig.TargetPort); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add ipvs service destination")
+	}
+	// Ensure the dummy device exists
+	if err := ensureServiceDevice(serviceConfig.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot ensure service link device")
+	}
+	// Add the service ip after cleaning all pre-existing ipv4 addresses
+	if err := flushIPv4Addresses(serviceConfig.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error":  err,
+			"device": serviceConfig.Name,
+		}).Fatal("Failed to clean ipv4 addresses from device")
+	}
+	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add address to service link device")
+	}
 }

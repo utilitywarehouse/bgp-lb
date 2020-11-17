@@ -11,3 +11,8 @@ type Result struct {
 type Checker interface {
 	Check() Result
 }
+
+// healthCheckSetup return a new healthcheck based on the service config
+func healthCheckSetup(serviceConfig serviceConfig) Checker {
+	return NewHttpCheck(serviceConfig.HttpHealthCheck.Port)
+}

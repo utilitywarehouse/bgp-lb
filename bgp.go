@@ -110,3 +110,27 @@ func (bs *BgpServer) ListV4Paths() {
 		log.Info(p)
 	})
 }
+
+// bgpSetup starts the bgp server and adds the peers
+func bgpSetup(bgpConfig bgpConfig) *BgpServer {
+	// Start bgp server
+	bgp, err := initBgpServer(
+		bgpConfig.Local.RouterId,
+		bgpConfig.Local.AS,
+		bgpConfig.Local.ListenPort,
+	)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot start bgp server")
+	}
+	// Add Peers
+	for _, peer := range bgpConfig.Peers {
+		if err := bgp.AddPeer(peer.Address, peer.AS); err != nil {
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Fatal("Cannot add bgpp peer")
+		}
+	}
+	return bgp
+}
