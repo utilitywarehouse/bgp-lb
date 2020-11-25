@@ -19,8 +19,16 @@
   "service": {
     "name": "matchbox",
     "ip": "10.88.2.1",
-    "servicePort": 80,
-    "targetLocalPort": 8080,
+    "ports": [
+      {
+        "servicePort": 80,
+        "targetLocalPort": 8080
+      },
+      {
+        "servicePort": 443,
+        "targetLocalPort": 8081
+      }
+    ],
     "protocol": "tcp",
     "httphealthcheck": {
        "port": 8080
