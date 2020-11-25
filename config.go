@@ -35,10 +35,15 @@ type localConfig struct {
 type serviceConfig struct {
 	Name            string                `json:"name"`
 	IP              string                `json:"ip"`
-	ServicePort     uint16                `json:"servicePort"`
-	TargetPort      uint16                `json:"targetLocalPort"`
+	Ports           []servicePortConfig   `json:"ports"`
 	Protocol        string                `json:"protocol"`
 	HttpHealthCheck httpHealthCheckConfig `json:"httphealthcheck"`
+}
+
+// servicePortsConfig contains the mapping between a service and a local port
+type servicePortConfig struct {
+	ServicePort uint16 `json:"servicePort"`
+	TargetPort  uint16 `json:"targetLocalPort"`
 }
 
 // httpHealthCheckConfig contains the name and the url for an http healthcheck

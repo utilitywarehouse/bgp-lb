@@ -74,16 +74,18 @@ func netlinkSetup(serviceConfig serviceConfig, localIP string) {
 			"error": err,
 		}).Fatal("Cannot clean existing ipvs services")
 	}
-	svc, err := addIPVSService(serviceConfig.IP, serviceConfig.Protocol, serviceConfig.ServicePort)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Cannot add ipvs service")
-	}
-	if err := addIPVSDestination(svc, localIP, serviceConfig.TargetPort); err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Cannot add ipvs service destination")
+	for _, port := range serviceConfig.Ports {
+		svc, err := addIPVSService(serviceConfig.IP, serviceConfig.Protocol, port.ServicePort)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Fatal("Cannot add ipvs service")
+		}
+		if err := addIPVSDestination(svc, localIP, port.TargetPort); err != nil {
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Fatal("Cannot add ipvs service destination")
+		}
 	}
 	// Ensure the dummy device exists
 	if err := ensureServiceDevice(serviceConfig.Name); err != nil {

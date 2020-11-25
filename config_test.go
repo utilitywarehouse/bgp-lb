@@ -30,8 +30,16 @@ func TestConfigFmt(t *testing.T) {
   "service": {
     "name": "matchbox",
     "ip": "10.88.2.1",
-    "servicePort": 80,
-    "targetLocalPort": 8080,
+    "ports": [
+      {
+        "servicePort": 80,
+        "targetLocalPort": 8080
+      },
+      {
+        "servicePort": 443,
+        "targetLocalPort": 8081
+      }
+    ],
     "protocol": "tcp",
     "httphealthcheck": {
       "port": 8080
@@ -56,8 +64,11 @@ func TestConfigFmt(t *testing.T) {
 	assert.Equal(t, int32(-1), conf.Bgp.Local.ListenPort)
 	assert.Equal(t, "matchbox", conf.Service.Name)
 	assert.Equal(t, "10.88.2.1", conf.Service.IP)
-	assert.Equal(t, uint16(80), conf.Service.ServicePort)
-	assert.Equal(t, uint16(8080), conf.Service.TargetPort)
+	assert.Equal(t, 2, len(conf.Service.Ports))
+	assert.Equal(t, uint16(80), conf.Service.Ports[0].ServicePort)
+	assert.Equal(t, uint16(8080), conf.Service.Ports[0].TargetPort)
+	assert.Equal(t, uint16(443), conf.Service.Ports[1].ServicePort)
+	assert.Equal(t, uint16(8081), conf.Service.Ports[1].TargetPort)
 	assert.Equal(t, "tcp", conf.Service.Protocol)
 	assert.Equal(t, 8080, conf.Service.HttpHealthCheck.Port)
 }
