@@ -30,6 +30,7 @@ func TestConfigFmt(t *testing.T) {
   "service": {
     "name": "matchbox",
     "ip": "10.88.2.1",
+    "prefixLength": 32,
     "ports": [
       {
         "servicePort": 80,
@@ -64,6 +65,7 @@ func TestConfigFmt(t *testing.T) {
 	assert.Equal(t, int32(-1), conf.Bgp.Local.ListenPort)
 	assert.Equal(t, "matchbox", conf.Service.Name)
 	assert.Equal(t, "10.88.2.1", conf.Service.IP)
+	assert.Equal(t, 32, conf.Service.PrefixLength)
 	assert.Equal(t, 2, len(conf.Service.Ports))
 	assert.Equal(t, uint16(80), conf.Service.Ports[0].ServicePort)
 	assert.Equal(t, uint16(8080), conf.Service.Ports[0].TargetPort)

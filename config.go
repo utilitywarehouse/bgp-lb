@@ -35,6 +35,7 @@ type localConfig struct {
 type serviceConfig struct {
 	Name            string                `json:"name"`
 	IP              string                `json:"ip"`
+	PrefixLength    int                   `json: prefixLength`
 	Ports           []servicePortConfig   `json:"ports"`
 	Protocol        string                `json:"protocol"`
 	HttpHealthCheck httpHealthCheckConfig `json:"httphealthcheck"`
