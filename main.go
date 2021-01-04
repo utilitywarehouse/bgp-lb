@@ -69,7 +69,7 @@ func main() {
 func ServiceOn(bgp *BgpServer, config *config) {
 	if err := bgp.AddV4Path(
 		config.Service.IP,
-		32,
+		conf.Service.PrefixLength,
 		config.Bgp.Local.RouterId,
 	); err != nil {
 		log.Fatal(err)
@@ -81,7 +81,7 @@ func ServiceOn(bgp *BgpServer, config *config) {
 func ServiceOff(bgp *BgpServer, config *config) {
 	if err := bgp.DeleteV4Path(
 		config.Service.IP,
-		32,
+		conf.Service.PrefixLength,
 		config.Bgp.Local.RouterId,
 	); err != nil {
 		log.Fatal(err)

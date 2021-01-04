@@ -48,7 +48,7 @@ func flushIPv4Addresses(device string) error {
 }
 
 // addAddressToDevice adds an ip address to a device
-func addAddressToDevice(ip, device string) error {
+func addAddressToDevice(ip, device string, prefixLength int) error {
 	h := netlink.Handle{}
 	defer h.Delete()
 	link, err := h.LinkByName(device)
@@ -56,7 +56,7 @@ func addAddressToDevice(ip, device string) error {
 		return err
 	}
 	ipv4Addr := net.ParseIP(ip)
-	ipv4Mask := net.CIDRMask(32, 32) // default to /32 service addresses
+	ipv4Mask := net.CIDRMask(prefixLength, 32)
 	return h.AddrAdd(link, &netlink.Addr{
 		IPNet: &net.IPNet{
 			IP:   ipv4Addr,
@@ -100,7 +100,7 @@ func netlinkSetup(serviceConfig serviceConfig, localIP string) {
 			"device": serviceConfig.Name,
 		}).Fatal("Failed to clean ipv4 addresses from device")
 	}
-	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name); err != nil {
+	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name, conf.Service.PrefixLength); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Fatal("Cannot add address to service link device")
