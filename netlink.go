@@ -100,7 +100,7 @@ func netlinkSetup(serviceConfig serviceConfig, localIP string) {
 			"device": serviceConfig.Name,
 		}).Fatal("Failed to clean ipv4 addresses from device")
 	}
-	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name, conf.Service.PrefixLength); err != nil {
+	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name, serviceConfig.PrefixLength); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Fatal("Cannot add address to service link device")
