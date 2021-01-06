@@ -35,6 +35,7 @@ type localConfig struct {
 type serviceConfig struct {
 	Name            string                `json:"name"`
 	IP              string                `json:"ip"`
+	PrefixLength    int                   `json: prefixLength`
 	Ports           []servicePortConfig   `json:"ports"`
 	Protocol        string                `json:"protocol"`
 	HttpHealthCheck httpHealthCheckConfig `json:"httphealthcheck"`
@@ -52,7 +53,13 @@ type httpHealthCheckConfig struct {
 }
 
 func readConfig(path string) (*config, error) {
-	conf := &config{}
+	// Default service prefix to /32 to avoid using /0 if omitted from the
+	// config file
+	conf := &config{
+		Service: serviceConfig{
+			PrefixLength: 32,
+		},
+	}
 	fileContent, err := ioutil.ReadFile(path)
 	if err != nil {
 		return conf, fmt.Errorf("error reading config file: %v", err)

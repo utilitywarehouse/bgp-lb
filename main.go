@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	advertised   = false // advertised holds a bool value to show whether the service ip is bgp advertised
-	flagConfig   = flag.String("config", "/etc/bgp-lb/config.json", "Config file path")
-	flagLogLevel = flag.String("log-level", "info", "Log level (debug|info|warning|error)")
+	advertised       = false // advertised holds a bool value to show whether the service ip is bgp advertised
+	flagConfig       = flag.String("config", "/etc/bgp-lb/config.json", "Config file path")
+	flagLogLevel     = flag.String("log-level", "info", "Log level (debug|info|warning|error)")
+	flagNetworkSetup = flag.Bool("network-setup", true, "Whether to try setting up net interfaces and ipvs rules on the host")
 )
 
 func initLogger(logLevel string) {
@@ -43,7 +44,9 @@ func main() {
 	}
 
 	bgp := bgpSetup(config.Bgp)
-	netlinkSetup(config.Service, config.Bgp.Local.RouterId)
+	if *flagNetworkSetup {
+		netlinkSetup(config.Service, config.Bgp.Local.RouterId)
+	}
 	h := healthCheckSetup(config.Service)
 
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
@@ -66,7 +69,7 @@ func main() {
 func ServiceOn(bgp *BgpServer, config *config) {
 	if err := bgp.AddV4Path(
 		config.Service.IP,
-		32,
+		uint32(config.Service.PrefixLength),
 		config.Bgp.Local.RouterId,
 	); err != nil {
 		log.Fatal(err)
@@ -78,7 +81,7 @@ func ServiceOn(bgp *BgpServer, config *config) {
 func ServiceOff(bgp *BgpServer, config *config) {
 	if err := bgp.DeleteV4Path(
 		config.Service.IP,
-		32,
+		uint32(config.Service.PrefixLength),
 		config.Bgp.Local.RouterId,
 	); err != nil {
 		log.Fatal(err)
