@@ -30,7 +30,6 @@ func TestConfigFmt(t *testing.T) {
   "service": {
     "name": "matchbox",
     "ip": "10.88.2.1",
-    "prefixLength": 32,
     "ports": [
       {
         "servicePort": 80,
@@ -49,7 +48,11 @@ func TestConfigFmt(t *testing.T) {
   }
 }
 `)
-	conf := &config{}
+	conf := &config{
+		Service: serviceConfig{
+			PrefixLength: 32,
+		},
+	}
 	err := json.Unmarshal(c, conf)
 	if err != nil {
 		t.Fatal(err)
