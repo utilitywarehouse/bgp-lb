@@ -13,6 +13,7 @@ var (
 	flagConfig       = flag.String("config", "/etc/bgp-lb/config.json", "Config file path")
 	flagLogLevel     = flag.String("log-level", "info", "Log level (debug|info|warning|error)")
 	flagNetworkSetup = flag.Bool("network-setup", true, "Whether to try setting up net interfaces and ipvs rules on the host")
+	flagMetricsAddr  = flag.String("metrics-address", ":8081", "Metrics server address")
 )
 
 func initLogger(logLevel string) {
@@ -47,8 +48,8 @@ func main() {
 	if *flagNetworkSetup {
 		netlinkSetup(config.Service, config.Bgp.Local.RouterId)
 	}
+	go startMetricsServer(*flagMetricsAddr)
 	h := healthCheckSetup(config.Service)
-
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
 		res := h.Check()
 		if res.err != "" {

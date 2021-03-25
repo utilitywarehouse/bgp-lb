@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
@@ -75,6 +76,7 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen uint32, nextHop string) 
 	if err != nil {
 		return err
 	}
+	setBGPPathAdvertisementMetric(prefix, fmt.Sprint(prefixLen), nextHop)
 	return nil
 }
 
@@ -102,6 +104,7 @@ func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen uint32, nextHop strin
 	if err != nil {
 		return err
 	}
+	unsetBGPPathAdvertisementMetric(prefix, fmt.Sprint(prefixLen), nextHop)
 	return nil
 }
 
