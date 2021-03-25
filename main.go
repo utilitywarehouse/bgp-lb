@@ -49,6 +49,9 @@ func main() {
 		netlinkSetup(config.Service, config.Bgp.Local.RouterId)
 	}
 	go startMetricsServer(*flagMetricsAddr)
+	// init metric with 0 value, in case healthcheck fails
+	unsetBGPPathAdvertisementMetric(config.Service.IP, fmt.Sprint(config.Service.PrefixLength), config.Bgp.Local.RouterId)
+
 	h := healthCheckSetup(config.Service)
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
 		res := h.Check()
