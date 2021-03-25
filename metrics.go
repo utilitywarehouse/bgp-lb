@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	bgpPathaAdvertisement = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	bgpPathAdvertisement = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "bgp_lb_path_advertisement",
 		Help: "Info about whether a path is advertised via the bgp daemon. It can be 0 or 1.",
 	},
@@ -22,11 +22,11 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(bgpPathaAdvertisement)
+	prometheus.MustRegister(bgpPathAdvertisement)
 }
 
 func setBGPPathAdvertisementMetric(prefix, prefixLen, nexthop string) {
-	bgpPathaAdvertisement.With(prometheus.Labels{
+	bgpPathAdvertisement.With(prometheus.Labels{
 		"prefix":        prefix,
 		"prefix_length": prefixLen,
 		"next_hop":      nexthop,
@@ -34,7 +34,7 @@ func setBGPPathAdvertisementMetric(prefix, prefixLen, nexthop string) {
 }
 
 func unsetBGPPathAdvertisementMetric(prefix, prefixLen, nexthop string) {
-	bgpPathaAdvertisement.With(prometheus.Labels{
+	bgpPathAdvertisement.With(prometheus.Labels{
 		"prefix":        prefix,
 		"prefix_length": prefixLen,
 		"next_hop":      nexthop,
