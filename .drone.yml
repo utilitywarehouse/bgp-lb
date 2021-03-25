@@ -11,8 +11,8 @@ steps:
   - name: docker-tag
     image: alpine
     commands:
-      - test "${DRONE_BRANCH}" == "master" && echo -n "latest," > .tags || true
-      - test -n "${DRONE_BRANCH}" && test "${DRONE_BRANCH}" != "master" && echo -n "${DRONE_BRANCH}," > .tags || true
+      - test "${DRONE_BRANCH}" == "main" && echo -n "latest," > .tags || true
+      - test -n "${DRONE_BRANCH}" && test "${DRONE_BRANCH}" != "main" && echo -n "${DRONE_BRANCH}," > .tags || true
       - test -n "${DRONE_TAG}" && echo -n "${DRONE_TAG}," >> .tags || true
       - sed -i "s/,$//" .tags
 
