@@ -1,14 +1,14 @@
+// https://github.com/osrg/gobgp/blob/master/docs/sources/lib.md
 package main
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
-	api "github.com/osrg/gobgp/api"
-	gobgp "github.com/osrg/gobgp/pkg/server"
+	api "github.com/osrg/gobgp/v3/api"
+	gobgp "github.com/osrg/gobgp/v3/pkg/server"
 	log "github.com/sirupsen/logrus"
+	apb "google.golang.org/protobuf/types/known/anypb"
 )
 
 var (
@@ -19,14 +19,14 @@ type BgpServer struct {
 	server *gobgp.BgpServer
 }
 
-func initBgpServer(routerId string, as uint32, listenPort int32) (*BgpServer, error) {
+func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, error) {
 	s := gobgp.NewBgpServer()
 	go s.Serve()
 
 	// global configuration
 	if err := s.StartBgp(context.Background(), &api.StartBgpRequest{
 		Global: &api.Global{
-			As:         as,
+			Asn:        asn,
 			RouterId:   routerId,
 			ListenPort: listenPort,
 		},
@@ -35,36 +35,40 @@ func initBgpServer(routerId string, as uint32, listenPort int32) (*BgpServer, er
 	}
 
 	// monitor the change of the peer state
-	if err := s.MonitorPeer(context.Background(), &api.MonitorPeerRequest{}, func(p *api.Peer) { log.Info(p) }); err != nil {
+	if err := s.WatchEvent(context.Background(), &api.WatchEventRequest{Peer: &api.WatchEventRequest_Peer{}}, func(r *api.WatchEventResponse) {
+		if p := r.GetPeer(); p != nil && p.Type == api.WatchEventResponse_PeerEvent_STATE {
+			log.Info(p)
+		}
+	}); err != nil {
 		log.Fatal(err)
 	}
 
 	return &BgpServer{server: s}, nil
 }
 
-func (bs *BgpServer) AddPeer(address string, as uint32) error {
+func (bs *BgpServer) AddPeer(address string, asn uint32) error {
 	n := &api.Peer{
 		Conf: &api.PeerConf{
 			NeighborAddress: address,
-			PeerAs:          as,
+			PeerAsn:         asn,
 		},
 	}
 	return bs.server.AddPeer(context.Background(), &api.AddPeerRequest{Peer: n})
 }
 
 func (bs *BgpServer) AddV4Path(prefix string, prefixLen uint32, nextHop string) error {
-	nlri, _ := ptypes.MarshalAny(&api.IPAddressPrefix{
+	nlri, _ := apb.New(&api.IPAddressPrefix{
 		Prefix:    prefix,
 		PrefixLen: prefixLen,
 	})
 
-	a1, _ := ptypes.MarshalAny(&api.OriginAttribute{
+	a1, _ := apb.New(&api.OriginAttribute{
 		Origin: 0, // the prefix originates from an interior routing protocol (IGP)
 	})
-	a2, _ := ptypes.MarshalAny(&api.NextHopAttribute{
+	a2, _ := apb.New(&api.NextHopAttribute{
 		NextHop: nextHop,
 	})
-	attrs := []*any.Any{a1, a2}
+	attrs := []*apb.Any{a1, a2}
 
 	_, err := bs.server.AddPath(context.Background(), &api.AddPathRequest{
 		Path: &api.Path{
@@ -81,18 +85,18 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen uint32, nextHop string) 
 }
 
 func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen uint32, nextHop string) error {
-	nlri, _ := ptypes.MarshalAny(&api.IPAddressPrefix{
+	nlri, _ := apb.New(&api.IPAddressPrefix{
 		Prefix:    prefix,
 		PrefixLen: prefixLen,
 	})
 
-	a1, _ := ptypes.MarshalAny(&api.OriginAttribute{
+	a1, _ := apb.New(&api.OriginAttribute{
 		Origin: 0, // the prefix originates from an interior routing protocol (IGP)
 	})
-	a2, _ := ptypes.MarshalAny(&api.NextHopAttribute{
+	a2, _ := apb.New(&api.NextHopAttribute{
 		NextHop: nextHop,
 	})
-	attrs := []*any.Any{a1, a2}
+	attrs := []*apb.Any{a1, a2}
 
 	err := bs.server.DeletePath(context.Background(), &api.DeletePathRequest{
 		Path: &api.Path{
