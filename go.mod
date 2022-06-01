@@ -3,7 +3,7 @@ module github.com/utilitywarehouse/bgp-lb
 go 1.18
 
 require (
-	github.com/moby/ipvs v1.0.1
+	github.com/moby/ipvs v1.0.2
 	github.com/osrg/gobgp/v3 v3.2.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
