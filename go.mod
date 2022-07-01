@@ -8,7 +8,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	github.com/vishvananda/netlink v1.2.0-beta
+	github.com/vishvananda/netlink v1.2.1-beta.2
 	google.golang.org/protobuf v1.28.0
 )
 
