@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/moby/ipvs v1.0.2
-	github.com/osrg/gobgp/v3 v3.7.0
+	github.com/osrg/gobgp/v3 v3.8.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
