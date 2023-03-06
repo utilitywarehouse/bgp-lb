@@ -158,8 +158,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/moby/ipvs v1.1.0 h1:ONN4pGaZQgAx+1Scz5RvWV4Q7Gb+mvfRh3NsPS+1XQQ=
 github.com/moby/ipvs v1.1.0/go.mod h1:4VJMWuf098bsUMmZEiD4Tjk/O7mOn3l1PTD3s4OoYAs=
-github.com/osrg/gobgp/v3 v3.11.0 h1:HismNqoeZJ96WoDjxg5A4mAvFmOcuct5QYktFc8euSo=
-github.com/osrg/gobgp/v3 v3.11.0/go.mod h1:/q/mr+dOuPf5hDlLiatVll1P7BX4pmiXQxd4ZZpUbkg=
+github.com/osrg/gobgp/v3 v3.12.0 h1:coxnxOntqE1tKMM3a4ftBGe5ft/I5rklxlezISpBXx4=
+github.com/osrg/gobgp/v3 v3.12.0/go.mod h1:rAPmqyijW79JIOkGu0BpLUCNdY769l7H+TlOKi5/5KY=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=
 github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha2N+QD+EUNTek=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
