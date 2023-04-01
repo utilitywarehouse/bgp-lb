@@ -9,7 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
 	github.com/vishvananda/netlink v1.2.1-beta.2
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf v1.30.0
 )
 
 require (
