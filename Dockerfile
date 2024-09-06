@@ -1,7 +1,7 @@
 FROM golang:1.22-alpine AS build
 WORKDIR /go/src/github.com/utilitywarehouse/bgp-lb
 COPY . /go/src/github.com/utilitywarehouse/bgp-lb
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 RUN apk --no-cache add git \
       && go get -t ./... \
       && go test ./... \
