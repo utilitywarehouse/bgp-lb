@@ -1,6 +1,8 @@
 module github.com/utilitywarehouse/bgp-lb
 
 go 1.21.0
+toolchain go1.22.8
+
 require (
 	github.com/moby/ipvs v1.1.0
 	github.com/osrg/gobgp/v3 v3.30.0
@@ -8,7 +10,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
 	github.com/vishvananda/netlink v1.3.0
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.35.1
 )
 
 require (
