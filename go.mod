@@ -5,7 +5,7 @@ toolchain go1.22.8
 
 require (
 	github.com/moby/ipvs v1.1.0
-	github.com/osrg/gobgp/v3 v3.30.0
+	github.com/osrg/gobgp/v3 v3.31.0
 	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
