@@ -33,12 +33,13 @@ type localConfig struct {
 
 // serviceConfig contains the advertised service ip and the healthcheck
 type serviceConfig struct {
-	Name            string                `json:"name"`
-	IP              string                `json:"ip"`
-	PrefixLength    int                   `json: prefixLength`
-	Ports           []servicePortConfig   `json:"ports"`
-	Protocol        string                `json:"protocol"`
-	HttpHealthCheck httpHealthCheckConfig `json:"httphealthcheck"`
+	Name            string                 `json:"name"`
+	IP              string                 `json:"ip"`
+	PrefixLength    int                    `json: prefixLength`
+	Ports           []servicePortConfig    `json:"ports"`
+	Protocol        string                 `json:"protocol"`
+	HttpHealthCheck *httpHealthCheckConfig `json:"httphealthcheck"`
+	PingHealthCheck *pingHealthCheckConfig `json:"pinghealthcheck"`
 }
 
 // servicePortsConfig contains the mapping between a service and a local port
@@ -47,9 +48,14 @@ type servicePortConfig struct {
 	TargetPort  uint16 `json:"targetLocalPort"`
 }
 
-// httpHealthCheckConfig contains the name and the url for an http healthcheck
+// httpHealthCheckConfig contains the local port the http health endpoint listens to
 type httpHealthCheckConfig struct {
 	Port int `json:"port"`
+}
+
+// pingHealthCheckConfig contains the address for the pinger to check
+type pingHealthCheckConfig struct {
+	Address string `json:"address"`
 }
 
 func readConfig(path string) (*config, error) {
