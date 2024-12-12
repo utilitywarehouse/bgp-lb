@@ -53,6 +53,9 @@ func main() {
 	unsetBGPPathAdvertisementMetric(config.Service.IP, fmt.Sprint(config.Service.PrefixLength), config.Bgp.Local.RouterId)
 
 	h := healthCheckSetup(config.Service)
+	if h == nil {
+		log.Fatal("Need to set one healthcheck")
+	}
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
 		res := h.Check()
 		if res.err != "" {
