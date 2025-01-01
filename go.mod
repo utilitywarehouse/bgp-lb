@@ -6,7 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/moby/ipvs v1.1.0
-	github.com/osrg/gobgp/v3 v3.32.0
+	github.com/osrg/gobgp/v3 v3.33.0
 	github.com/prometheus-community/pro-bing v0.5.0
 	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
