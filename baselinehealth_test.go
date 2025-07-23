@@ -7,6 +7,7 @@ import (
 )
 
 func TestPartiallyFailingBaselineHealthCheck(t *testing.T) {
+	// "192.0.2.0" is a test ip according to https://www.rfc-editor.org/rfc/rfc5737#section-3
 	h := NewBaselineCheckWithAddresses([]string{"1.1.1.1", "192.0.2.0"})
 	result := h.Check()
 	assert.Equal(t, result.healthy, true)
@@ -15,6 +16,7 @@ func TestPartiallyFailingBaselineHealthCheck(t *testing.T) {
 }
 
 func TestFailingBaselineHealthCheck(t *testing.T) {
+	// "192.0.2.0" is a test ip according to https://www.rfc-editor.org/rfc/rfc5737#section-3
 	h := NewBaselineCheckWithAddresses([]string{"192.0.2.0"})
 	result := h.Check()
 	assert.Equal(t, result.healthy, false)
