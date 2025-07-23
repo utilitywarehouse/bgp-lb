@@ -20,5 +20,5 @@ func healthCheckSetup(serviceConfig serviceConfig) Checker {
 	if serviceConfig.PingHealthCheck != nil {
 		return NewPingCheck(serviceConfig.PingHealthCheck.Address)
 	}
-	return nil
+	return NewBaselineCheck()
 }
