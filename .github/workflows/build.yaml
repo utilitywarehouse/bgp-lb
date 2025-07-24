@@ -45,4 +45,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # network: host
+          network: host
+          allow: network.host
