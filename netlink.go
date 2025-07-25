@@ -12,12 +12,12 @@ import (
 // one if not found
 func ensureServiceDevice(name string) error {
 	h := netlink.Handle{}
-	defer h.Delete()
+	defer h.Close()
 	_, err := h.LinkByName(name)
 	if err != nil {
 		_, notFound := err.(netlink.LinkNotFoundError)
 		if notFound {
-			d := &netlink.Dummy{netlink.LinkAttrs{
+			d := &netlink.Dummy{LinkAttrs: netlink.LinkAttrs{
 				Name: name,
 			}}
 			return netlink.LinkAdd(d)
@@ -30,7 +30,7 @@ func ensureServiceDevice(name string) error {
 // flushIPv4Addresses deletes all the ipv4 addresses from a device
 func flushIPv4Addresses(device string) error {
 	h := netlink.Handle{}
-	defer h.Delete()
+	defer h.Close()
 	link, err := h.LinkByName(device)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func flushIPv4Addresses(device string) error {
 // addAddressToDevice adds an ip address to a device
 func addAddressToDevice(ip, device string, prefixLength int) error {
 	h := netlink.Handle{}
-	defer h.Delete()
+	defer h.Close()
 	link, err := h.LinkByName(device)
 	if err != nil {
 		return err
