@@ -55,7 +55,7 @@ type httpHealthCheckConfig struct {
 
 // pingHealthCheckConfig contains the address for the pinger to check
 type pingHealthCheckConfig struct {
-	Address string `json:"address"`
+	Addresses []string `json:"addresses"`
 }
 
 func readConfig(path string) (*config, error) {

@@ -18,7 +18,8 @@ func healthCheckSetup(serviceConfig serviceConfig) Checker {
 		return NewHttpCheck(serviceConfig.HttpHealthCheck.Port)
 	}
 	if serviceConfig.PingHealthCheck != nil {
-		return NewPingCheck(serviceConfig.PingHealthCheck.Address)
+		return NewPingCheck(serviceConfig.PingHealthCheck.Addresses)
 	}
-	return nil
+	// Default to pinging well known DNS providers
+	return NewPingCheck([]string{"1.1.1.1","8.8.8.8"})
 }

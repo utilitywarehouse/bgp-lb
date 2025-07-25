@@ -43,8 +43,13 @@ func TestConfigFmt(t *testing.T) {
     "protocol": "tcp",
     "httphealthcheck": {
       "port": 8080
+    },
+    "pinghealthcheck": {
+      "addresses": [
+        "1.1.1.1",
+        "8.8.8.8"
+      ]
     }
-
   }
 }
 `)
@@ -76,4 +81,6 @@ func TestConfigFmt(t *testing.T) {
 	assert.Equal(t, uint16(8081), conf.Service.Ports[1].TargetPort)
 	assert.Equal(t, "tcp", conf.Service.Protocol)
 	assert.Equal(t, 8080, conf.Service.HttpHealthCheck.Port)
+	assert.Equal(t, "1.1.1.1", conf.Service.PingHealthCheck.Addresses[0])
+	assert.Equal(t, "8.8.8.8", conf.Service.PingHealthCheck.Addresses[1])
 }

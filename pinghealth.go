@@ -8,31 +8,44 @@ import (
 )
 
 type PingCheck struct {
-	pinger *probing.Pinger
+	pingers []*probing.Pinger
 }
 
-func NewPingCheck(address string) PingCheck {
-	pinger, err := probing.NewPinger(address)
-	if err != nil {
-		panic(err)
+func NewPingCheck(addresses []string) PingCheck {
+	check := PingCheck{}
+	for _, address := range addresses {
+		pinger, err := probing.NewPinger(address)
+		if err != nil {
+			panic(err)
+		}
+		pinger.Count = 1
+		pinger.Timeout = 5 * time.Second
+		check.pingers = append(check.pingers, pinger)
 	}
-	pinger.Count = 1
-	pinger.Timeout = 5 * time.Second
-	return PingCheck{
-		pinger: pinger,
-	}
+	return check
 }
 
 func (pc PingCheck) Check() Result {
-	err := pc.pinger.Run() // Blocks until finished.
-	healthy := err == nil
+	healthy := false
 	errMsg := ""
-	if err != nil {
-		errMsg = fmt.Sprintf("Pinging failed: %v", err)
+	out := ""
+
+	// If any pinger succeeds, consider that connectivity is healthy
+	for _, pinger := range pc.pingers {
+		err := pinger.Run() // Blocks until finished.
+		if err != nil {
+			errMsg += fmt.Sprintf("ping probe for %v failed to run with error: %s, ", pinger.Addr(), err)
+			continue
+		}
+		stats := pinger.Statistics()
+		if stats.PacketLoss == 0 {
+			healthy = true
+			break
+		} else {
+			out += fmt.Sprintf("%v: %d packets transmitted, %d packets received, %v%% packet loss, ",
+				pinger.Addr(), stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss)
+		}
 	}
-	stats := pc.pinger.Statistics()
-	out := fmt.Sprintf("%d packets transmitted, %d packets received, %v%% packet loss\n",
-		stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss)
 
 	return Result{
 		healthy: healthy,
