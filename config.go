@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // config includes all the config
@@ -35,7 +35,7 @@ type localConfig struct {
 type serviceConfig struct {
 	Name            string                 `json:"name"`
 	IP              string                 `json:"ip"`
-	PrefixLength    int                    `json: prefixLength`
+	PrefixLength    int                    `json:"prefixLength"`
 	Ports           []servicePortConfig    `json:"ports"`
 	Protocol        string                 `json:"protocol"`
 	HttpHealthCheck *httpHealthCheckConfig `json:"httphealthcheck"`
@@ -66,7 +66,7 @@ func readConfig(path string) (*config, error) {
 			PrefixLength: 32,
 		},
 	}
-	fileContent, err := ioutil.ReadFile(path)
+	fileContent, err := os.ReadFile(path)
 	if err != nil {
 		return conf, fmt.Errorf("error reading config file: %v", err)
 	}
