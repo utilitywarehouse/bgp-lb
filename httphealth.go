@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -33,10 +32,10 @@ func (hc HttpCheck) Check() Result {
 		}
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, resp.Body)
+		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 	}()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
