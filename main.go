@@ -54,17 +54,24 @@ func main() {
 
 	h := healthCheckSetup(config.Service)
 	for t := time.Tick(time.Second * time.Duration(1)); ; <-t {
+		log.Debug("Running a new healthcheck")
 		res := h.Check()
 		if res.err != "" {
 			log.Warn(fmt.Sprintf("Healthcheck error: %s\n", res.err))
+		}
+		if res.healthy {
+			log.Debug("Healthcheck succeeded")
+		} else {
+			if res.output != "" {
+				log.Warn(fmt.Sprintf("Healthcheck failed: %s\n", res.output))
+			} else {
+				log.Warn("Healthcheck failed")
+			}
 		}
 		if res.healthy && !advertised {
 			ServiceOn(bgp, config)
 		}
 		if !res.healthy && advertised {
-			if res.output != "" {
-				log.Warn(fmt.Sprintf("Healthcheck failed: %s\n", res.output))
-			}
 			ServiceOff(bgp, config)
 		}
 	}
@@ -80,6 +87,7 @@ func ServiceOn(bgp *BgpServer, config *config) {
 	}
 	bgp.ListV4Paths()
 	advertised = true
+	log.Info("Service on")
 }
 
 func ServiceOff(bgp *BgpServer, config *config) {
@@ -90,6 +98,7 @@ func ServiceOff(bgp *BgpServer, config *config) {
 	); err != nil {
 		log.Fatal(err)
 	}
-	advertised = false
 	bgp.ListV4Paths()
+	advertised = false
+	log.Info("Service off")
 }
