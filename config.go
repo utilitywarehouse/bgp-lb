@@ -50,8 +50,10 @@ type servicePortConfig struct {
 
 // httpHealthCheckConfig contains the local port the http health endpoint listens to
 type httpHealthCheckConfig struct {
-	Path string `json:"path"`
-	Port int    `json:"port"`
+	Path               string `json:"path"`
+	Port               int    `json:"port"`
+	Scheme             string `json:"scheme"`
+	InsecureSkipVerify bool   `json:"insecureSkipVerify"`
 }
 
 // pingHealthCheckConfig contains the address for the pinger to check
