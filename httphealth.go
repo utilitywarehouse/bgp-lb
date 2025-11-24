@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -12,18 +14,33 @@ type HttpCheck struct {
 	client *http.Client
 	path   string
 	port   int
+	scheme string
 }
 
-func NewHttpCheck(path string, port int) HttpCheck {
+func NewHttpCheck(path, scheme string, port int, insecureSkipVerify bool) HttpCheck {
+	client := http.DefaultClient
+	if insecureSkipVerify {
+		client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+			Timeout: 3 * time.Second,
+		}
+	}
 	return HttpCheck{
-		client: http.DefaultClient,
+		client: client,
 		path:   path,
 		port:   port,
+		scheme: scheme,
 	}
 }
 
 func (hc HttpCheck) Check() Result {
-	url := fmt.Sprintf("http://127.0.0.1:%d/%s", hc.port, hc.path)
+	scheme := hc.scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+	url := fmt.Sprintf("%s://127.0.0.1:%d/%s", scheme, hc.port, hc.path)
 	resp, err := hc.client.Get(url)
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Warn("error while trying to query HTTP endpoint")
