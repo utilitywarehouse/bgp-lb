@@ -10,18 +10,20 @@ import (
 
 type HttpCheck struct {
 	client *http.Client
+	path   string
 	port   int
 }
 
-func NewHttpCheck(port int) HttpCheck {
+func NewHttpCheck(path string, port int) HttpCheck {
 	return HttpCheck{
 		client: http.DefaultClient,
+		path:   path,
 		port:   port,
 	}
 }
 
 func (hc HttpCheck) Check() Result {
-	url := fmt.Sprintf("http://127.0.0.1:%d", hc.port)
+	url := fmt.Sprintf("http://127.0.0.1:%d/%s", hc.port, hc.path)
 	resp, err := hc.client.Get(url)
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Warn("error while trying to query HTTP endpoint")

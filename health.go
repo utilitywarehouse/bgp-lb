@@ -15,7 +15,7 @@ type Checker interface {
 // healthCheckSetup return a new healthcheck based on the service config
 func healthCheckSetup(serviceConfig serviceConfig) Checker {
 	if serviceConfig.HttpHealthCheck != nil {
-		return NewHttpCheck(serviceConfig.HttpHealthCheck.Port)
+		return NewHttpCheck(serviceConfig.HttpHealthCheck.Path, serviceConfig.HttpHealthCheck.Port)
 	}
 	if serviceConfig.PingHealthCheck != nil {
 		return NewPingCheck(serviceConfig.PingHealthCheck.Addresses)
