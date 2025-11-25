@@ -12,7 +12,8 @@ var (
 	advertised       = false // advertised holds a bool value to show whether the service ip is bgp advertised
 	flagConfig       = flag.String("config", "/etc/bgp-lb/config.json", "Config file path")
 	flagLogLevel     = flag.String("log-level", "info", "Log level (debug|info|warning|error)")
-	flagNetworkSetup = flag.Bool("network-setup", true, "Whether to try setting up net interfaces and ipvs rules on the host")
+	flagNetworkSetup = flag.Bool("network-setup", true, "Whether to set up a net interface for the service address on the host")
+	flagIPVSSetup    = flag.Bool("ipvs-setup", false, "Will flush IPVS table and add a route from the service address to the target host port. Effective only when combined with -network-setup")
 	flagMetricsAddr  = flag.String("metrics-address", ":8081", "Metrics server address")
 )
 
@@ -46,7 +47,7 @@ func main() {
 
 	bgp := bgpSetup(config.Bgp)
 	if *flagNetworkSetup {
-		netlinkSetup(config.Service, config.Bgp.Local.RouterId)
+		netlinkSetup(config.Service, config.Bgp.Local.RouterId, *flagIPVSSetup)
 	}
 	go startMetricsServer(*flagMetricsAddr)
 	// init metric with 0 value, in case healthcheck fails

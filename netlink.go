@@ -67,7 +67,29 @@ func addAddressToDevice(ip, device string, prefixLength int) error {
 
 // netlinkSetup applies the needed host network configuration based on the
 // service config
-func netlinkSetup(serviceConfig serviceConfig, localIP string) {
+func netlinkSetup(serviceConfig serviceConfig, localIP string, setupIPVS bool) {
+	// Ensure the dummy device exists
+	if err := ensureServiceDevice(serviceConfig.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot ensure service link device")
+	}
+	// Add the service ip after cleaning all pre-existing ipv4 addresses
+	if err := flushIPv4Addresses(serviceConfig.Name); err != nil {
+		log.WithFields(log.Fields{
+			"error":  err,
+			"device": serviceConfig.Name,
+		}).Fatal("Failed to clean ipv4 addresses from device")
+	}
+	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name, serviceConfig.PrefixLength); err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Cannot add address to service link device")
+	}
+	// If setting IPVS is not required, we are done here
+	if !setupIPVS {
+		return
+	}
 	// Ensure ipvs service and add the local router as destination
 	if err := cleanIPVSServices(serviceConfig.IP); err != nil {
 		log.WithFields(log.Fields{
@@ -86,23 +108,5 @@ func netlinkSetup(serviceConfig serviceConfig, localIP string) {
 				"error": err,
 			}).Fatal("Cannot add ipvs service destination")
 		}
-	}
-	// Ensure the dummy device exists
-	if err := ensureServiceDevice(serviceConfig.Name); err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Cannot ensure service link device")
-	}
-	// Add the service ip after cleaning all pre-existing ipv4 addresses
-	if err := flushIPv4Addresses(serviceConfig.Name); err != nil {
-		log.WithFields(log.Fields{
-			"error":  err,
-			"device": serviceConfig.Name,
-		}).Fatal("Failed to clean ipv4 addresses from device")
-	}
-	if err := addAddressToDevice(serviceConfig.IP, serviceConfig.Name, serviceConfig.PrefixLength); err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Cannot add address to service link device")
 	}
 }
