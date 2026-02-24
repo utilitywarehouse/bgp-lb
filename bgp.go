@@ -7,11 +7,10 @@ import (
 	"net/netip"
 	"time"
 
-	api "github.com/osrg/gobgp/v4/api"
+	"github.com/osrg/gobgp/v4/api"
 	"github.com/osrg/gobgp/v4/pkg/apiutil"
 	"github.com/osrg/gobgp/v4/pkg/packet/bgp"
 	"github.com/osrg/gobgp/v4/pkg/server"
-	gobgp "github.com/osrg/gobgp/v4/pkg/server"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,11 +20,11 @@ var (
 )
 
 type BgpServer struct {
-	server *gobgp.BgpServer
+	server *server.BgpServer
 }
 
 func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, error) {
-	s := gobgp.NewBgpServer()
+	s := server.NewBgpServer()
 	go s.Serve()
 
 	// global configuration
@@ -45,7 +44,7 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 			if peer.Type == apiutil.PEER_EVENT_STATE {
 				log.Info(peer)
 			}
-		}}); err != nil {
+		}}, server.WatchPeer()); err != nil {
 		log.Fatal(err)
 	}
 
