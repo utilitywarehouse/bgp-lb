@@ -58,24 +58,28 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 	return &BgpServer{server: s}, nil
 }
 
-func (bs *BgpServer) AddPeer(address string, asn uint32) error {
+func (bs *BgpServer) AddPeer(address, rrAddress string, asn uint32) error {
 	n := &api.Peer{
 		Conf: &api.PeerConf{
 			NeighborAddress:      address,
 			PeerAsn:              asn,
 			AllowAspathLoopLocal: true,
 		},
+		// In iBGP, if you want GoBGP to be the source of truth:
+		RouteReflector: &api.RouteReflector{
+			RouteReflectorClient:    true,
+			RouteReflectorClusterId: rrAddress,
+		},
 	}
 	return bs.server.AddPeer(context.Background(), &api.AddPeerRequest{Peer: n})
 }
 
-func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
+func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
-	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
+	attrs := []bgp.PathAttributeInterface{a1, a2}
 
 	_, err := bs.server.AddPath(apiutil.AddPathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
@@ -88,13 +92,12 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn
 	return nil
 }
 
-func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
+func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
-	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
+	attrs := []bgp.PathAttributeInterface{a1, a2}
 
 	err := bs.server.DeletePath(apiutil.DeletePathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
@@ -138,7 +141,7 @@ func bgpSetup(bgpConfig bgpConfig) *BgpServer {
 	}
 	// Add Peers
 	for _, peer := range bgpConfig.Peers {
-		if err := bgp.AddPeer(peer.Address, peer.AS); err != nil {
+		if err := bgp.AddPeer(peer.Address, bgpConfig.Local.RouterId, peer.AS); err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
 			}).Fatal("Cannot add bgpp peer")
