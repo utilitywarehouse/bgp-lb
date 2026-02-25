@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/netip"
 	"time"
 
@@ -24,7 +25,12 @@ type BgpServer struct {
 }
 
 func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, error) {
-	s := server.NewBgpServer()
+
+	log := slog.Default()
+	lvl := &slog.LevelVar{}
+	lvl.Set(slog.LevelDebug)
+
+	s := server.NewBgpServer(server.LoggerOption(log, lvl))
 	go s.Serve()
 
 	// global configuration
@@ -42,10 +48,11 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 	if err := s.WatchEvent(context.Background(), server.WatchEventMessageCallbacks{
 		OnPeerUpdate: func(peer *apiutil.WatchEventMessage_PeerEvent, _ time.Time) {
 			if peer.Type == apiutil.PEER_EVENT_STATE {
-				log.Info(peer)
+				log.Info("peer state changed", slog.Any("Peer", peer.Peer))
 			}
 		}}, server.WatchPeer()); err != nil {
-		log.Fatal(err)
+		log.Error("failed to watch event", slog.String("Error", err.Error()))
+		return nil, err
 	}
 
 	return &BgpServer{server: s}, nil
