@@ -54,8 +54,9 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 func (bs *BgpServer) AddPeer(address string, asn uint32) error {
 	n := &api.Peer{
 		Conf: &api.PeerConf{
-			NeighborAddress: address,
-			PeerAsn:         asn,
+			NeighborAddress:      address,
+			PeerAsn:              asn,
+			AllowAspathLoopLocal: true,
 		},
 	}
 	return bs.server.AddPeer(context.Background(), &api.AddPeerRequest{Peer: n})
