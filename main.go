@@ -83,6 +83,7 @@ func ServiceOn(bgp *BgpServer, config *config) {
 		config.Service.IP,
 		config.Service.PrefixLength,
 		config.Bgp.Local.RouterId,
+		uint16(config.Bgp.Local.AS),
 	); err != nil {
 		log.Fatal(err)
 	}
@@ -96,6 +97,7 @@ func ServiceOff(bgp *BgpServer, config *config) {
 		config.Service.IP,
 		config.Service.PrefixLength,
 		config.Bgp.Local.RouterId,
+		uint16(config.Bgp.Local.AS),
 	); err != nil {
 		log.Fatal(err)
 	}

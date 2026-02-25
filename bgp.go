@@ -61,12 +61,13 @@ func (bs *BgpServer) AddPeer(address string, asn uint32) error {
 	return bs.server.AddPeer(context.Background(), &api.AddPeerRequest{Peer: n})
 }
 
-func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string) error {
+func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	attrs := []bgp.PathAttributeInterface{a1, a2}
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
 	_, err := bs.server.AddPath(apiutil.AddPathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
@@ -79,12 +80,13 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string) err
 	return nil
 }
 
-func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string) error {
+func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	attrs := []bgp.PathAttributeInterface{a1, a2}
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
 	err := bs.server.DeletePath(apiutil.DeletePathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
