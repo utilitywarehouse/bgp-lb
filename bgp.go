@@ -12,7 +12,6 @@ import (
 	"github.com/osrg/gobgp/v4/pkg/apiutil"
 	"github.com/osrg/gobgp/v4/pkg/packet/bgp"
 	"github.com/osrg/gobgp/v4/pkg/server"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -44,6 +43,14 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 		return nil, err
 	}
 
+	// set default import policy
+	s.SetPolicyAssignment(context.Background(), &api.SetPolicyAssignmentRequest{
+		Assignment: &api.PolicyAssignment{
+			Direction:     api.PolicyDirection_POLICY_DIRECTION_IMPORT,
+			DefaultAction: api.RouteAction_ROUTE_ACTION_REJECT,
+		},
+	})
+
 	// monitor the change of the peer state
 	if err := s.WatchEvent(context.Background(), server.WatchEventMessageCallbacks{
 		OnPeerUpdate: func(peer *apiutil.WatchEventMessage_PeerEvent, _ time.Time) {
@@ -61,22 +68,25 @@ func initBgpServer(routerId string, asn uint32, listenPort int32) (*BgpServer, e
 func (bs *BgpServer) AddPeer(address string, asn uint32) error {
 	n := &api.Peer{
 		Conf: &api.PeerConf{
-			NeighborAddress:      address,
-			PeerAsn:              asn,
-			AllowAspathLoopLocal: true,
+			NeighborAddress: address,
+			PeerAsn:         asn,
 		},
 	}
 	return bs.server.AddPeer(context.Background(), &api.AddPeerRequest{Peer: n})
 }
 
-func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
+func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn uint32) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAs4PathParam(bgp.BGP_ASPATH_ATTR_TYPE_SEQ, []uint32{asn})})
 	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
+	log.Info("Adding Path",
+		slog.String("path", path),
+		slog.String("next hop", nextHop),
+	)
 	_, err := bs.server.AddPath(apiutil.AddPathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
 		Attrs: attrs,
@@ -88,12 +98,12 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn
 	return nil
 }
 
-func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string, asn uint16) error {
+func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string, asn uint32) error {
 	path := fmt.Sprintf("%s/%d", prefix, prefixLen)
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAs4PathParam(bgp.BGP_ASPATH_ATTR_TYPE_SEQ, []uint32{asn})})
 	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
 	err := bs.server.DeletePath(apiutil.DeletePathRequest{Paths: []*apiutil.Path{{
@@ -113,12 +123,12 @@ func (bs *BgpServer) ListV4Paths() {
 	}, func(prefix bgp.NLRI, paths []*apiutil.Path) {
 		log.Info(prefix.String())
 		for _, p := range paths {
-			log.WithFields(logrus.Fields{
-				"peer_asn":     p.PeerASN,
-				"peer_address": p.PeerAddress,
-				"age":          p.Age,
-				"best":         p.Best,
-			}).Info("path")
+			log.Info("path",
+				slog.Uint64("peer_asn", uint64(p.PeerASN)),
+				slog.String("peer_address", p.PeerAddress.String()),
+				slog.Uint64("age", uint64(p.Age)),
+				slog.Bool("best", p.Best),
+			)
 		}
 	})
 }
