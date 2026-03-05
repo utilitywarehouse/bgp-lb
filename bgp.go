@@ -12,7 +12,6 @@ import (
 	"github.com/osrg/gobgp/v4/pkg/apiutil"
 	"github.com/osrg/gobgp/v4/pkg/packet/bgp"
 	"github.com/osrg/gobgp/v4/pkg/server"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -74,9 +73,13 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string, asn
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{6762, 39919, 65000, 35753, 65000, asn})})
 	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
+	log.Info("Adding Path",
+		slog.String("path", path),
+		slog.String("next hop", nextHop),
+	)
 	_, err := bs.server.AddPath(apiutil.AddPathRequest{Paths: []*apiutil.Path{{
 		Nlri:  nlri,
 		Attrs: attrs,
@@ -93,7 +96,7 @@ func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string, 
 	nlri, _ := bgp.NewIPAddrPrefix(netip.MustParsePrefix(path))
 	a1 := bgp.NewPathAttributeOrigin(0) // the prefix originates from an interior routing protocol (IGP)
 	a2, _ := bgp.NewPathAttributeNextHop(netip.MustParseAddr(nextHop))
-	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{asn})})
+	a3 := bgp.NewPathAttributeAsPath([]bgp.AsPathParamInterface{bgp.NewAsPathParam(2, []uint16{6762, 39919, 65000, 35753, 65000})})
 	attrs := []bgp.PathAttributeInterface{a1, a2, a3}
 
 	err := bs.server.DeletePath(apiutil.DeletePathRequest{Paths: []*apiutil.Path{{
@@ -113,12 +116,12 @@ func (bs *BgpServer) ListV4Paths() {
 	}, func(prefix bgp.NLRI, paths []*apiutil.Path) {
 		log.Info(prefix.String())
 		for _, p := range paths {
-			log.WithFields(logrus.Fields{
-				"peer_asn":     p.PeerASN,
-				"peer_address": p.PeerAddress,
-				"age":          p.Age,
-				"best":         p.Best,
-			}).Info("path")
+			log.Info("path",
+				slog.Uint64("peer_asn", uint64(p.PeerASN)),
+				slog.String("peer_address", p.PeerAddress.String()),
+				slog.Uint64("age", uint64(p.Age)),
+				slog.Bool("best", p.Best),
+			)
 		}
 	})
 }
