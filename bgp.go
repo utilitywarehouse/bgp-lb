@@ -69,8 +69,9 @@ func (bs *BgpServer) AddV4Path(prefix string, prefixLen int, nextHop string) err
 	attrs := []bgp.PathAttributeInterface{a1, a2}
 
 	_, err := bs.server.AddPath(apiutil.AddPathRequest{Paths: []*apiutil.Path{{
-		Nlri:  nlri,
-		Attrs: attrs,
+		Family: bgp.RF_IPv4_UC,
+		Nlri:   nlri,
+		Attrs:  attrs,
 	}}})
 	if err != nil {
 		return err
@@ -87,8 +88,9 @@ func (bs *BgpServer) DeleteV4Path(prefix string, prefixLen int, nextHop string) 
 	attrs := []bgp.PathAttributeInterface{a1, a2}
 
 	err := bs.server.DeletePath(apiutil.DeletePathRequest{Paths: []*apiutil.Path{{
-		Nlri:  nlri,
-		Attrs: attrs,
+		Family: bgp.RF_IPv4_UC,
+		Nlri:   nlri,
+		Attrs:  attrs,
 	}}})
 	if err != nil {
 		return err
