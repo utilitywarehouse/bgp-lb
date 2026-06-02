@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/moby/ipvs v1.1.0
-	github.com/osrg/gobgp/v4 v4.5.0
+	github.com/osrg/gobgp/v4 v4.6.0
 	github.com/prometheus-community/pro-bing v0.8.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
