@@ -1,0 +1,18 @@
+⏺ Here's where things stand:
+
+  GO-2026-6061 (grpc) — fixed. Bumped google.golang.org/grpc v1.79.3 → v1.82.1 (transitively pulled in by gobgp; also bumped google.golang.org/genproto/googleapis/rpc). Confirmed clean via govulncheck.
+
+  GO-2026-4736 (gobgp NEXT_HOP DoS) — not fixable by version bump, likely a stale advisory. I bumped gobgp v4.7.0 → v4.8.0 anyway (latest available), but govulncheck still flags it with "Fixed in: N/A". I checked upstream:
+  - The advisory (CVE-2026-30405 / GHSA-4p9m-8gc4-rw2h) points to fix commit 583080a7 ("fix malformed nexthop attribute crash", closes gobgp#3305, merged 2026-02-17).
+  - That commit is already an ancestor of v4.7.0 (163 commits before it) — i.e., the version we already had, and v4.8.0, both already contain the fix.
+  - The Go vulnerability database just hasn't been updated with a "fixed in" version yet, so govulncheck can't tell the fix landed and keeps flagging the function by name (recvMessageloop) regardless of patch status.
+
+  So this is effectively a false positive that will keep failing the govulncheck CI job until the upstream advisory metadata is updated (out of our control). Verified build + full go test --skip PingCheck ./... still pass on Linux via Docker with both dependency bumps in
+  place; gofmt and go mod tidy are clean.
+
+  Separate issue you pasted: the go-tests.yaml "latest" deps matrix job (go get -u -t ./... && go test -race) is failing all PingCheck tests with socket: permission denied on the GitHub runner. That's unrelated to grpc/gobgp — it's the unprivileged-ICMP capability
+  pro-bing needs, which the latest-deps leg doesn't skip (unlike the Dockerfile/locked path, which explicitly does --skip PingCheck). This looks pre-existing to this matrix leg rather than something my changes introduced. Want me to look into fixing/skipping that job too,
+  or leave it as-is?
+
+✻ Baked for 5m 12s
+
