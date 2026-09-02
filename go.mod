@@ -1,6 +1,6 @@
 module github.com/utilitywarehouse/bgp-lb
 
-go 1.25.0
+go 1.26.5
 
 require (
 	github.com/moby/ipvs v1.1.0
